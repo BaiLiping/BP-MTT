@@ -1,4 +1,4 @@
-Converted from Meyer's matlab implementation.
+Converted from Meyer's matlab implementation. [https://github.com/meyer-ucsd/EOT-TSP-21](https://github.com/meyer-ucsd/EOT-TSP-21)
 
 The PyTorch version is faster implementaion with higher neumerical stability. 
 
