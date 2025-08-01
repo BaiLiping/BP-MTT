@@ -1,4 +1,6 @@
-Converted Meyer's paper and reference in python for better integratation into other projects.
+Converted from Meyer's matlab implementation.
+
+The PyTorch version is faster implementaion with higher neumerical stability. 
 
 
 The Torch version is much better:
