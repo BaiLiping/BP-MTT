@@ -227,24 +227,22 @@ class TrackerBP_PyTorch:
         kappa = torch.ones(num_meas, num_targets, device=self.device)
         
         for _ in range(num_iter):
-            # Message from target 'i' to measurement 'j' (mu_ab)
-            # Denominator: Sum of all incoming messages to target 'i'
-            denom_sum = beta_normalized[0, :] + torch.sum(beta_normalized[1:, :] * kappa, dim=0)
-            mu_ab_denom = denom_sum.unsqueeze(0) - beta_normalized[1:, :] * kappa
-            mu_ab = beta_normalized[1:, :] / (mu_ab_denom + 1e-9)
+        # Message from target 'i' to measurement 'j' (mu_ab)
+        # Denominator: Sum of all incoming messages to target 'i'
+        denom_sum = beta_normalized[0, :] + torch.sum(beta_normalized[1:, :] * kappa, dim=0)
+        mu_ab_denom = denom_sum.unsqueeze(0) - beta_normalized[1:, :] * kappa + 1e-9
+        mu_ab = beta_normalized[1:, :] / mu_ab_denom
 
-            # Message from measurement 'j' to target 'i' (recomputing kappa)
-            denom_sum_j = self.xi + torch.sum(mu_ab, dim=1)
-            kappa_denom = denom_sum_j.unsqueeze(1) - mu_ab
-            kappa = 1.0 / (kappa_denom + 1e-9)
-        
-        self.kappa = kappa
-        
-        # Compute iota: posterior probability of a measurement being unassociated
-        final_sum_j = torch.sum(mu_ab, dim=1)
-        self.iota = self.xi / (final_sum_j + self.xi + 1e-9)
-
-    def compute_gamma(self) -> None:
+        # Message from measurement 'j' to target 'i' (recomputing kappa)
+        denom_sum_j = self.xi + torch.sum(mu_ab, dim=1)
+        kappa_denom = denom_sum_j.unsqueeze(1) - mu_ab + 1e-9
+        kappa = 1.0 / kappa_denom
+    
+    self.kappa = kappa
+    
+    # Compute iota: posterior probability of a measurement being unassociated
+    final_sum_j = torch.sum(mu_ab, dim=1)
+    self.iota = 1.0 / (self.xi + final_sum_j)    def compute_gamma(self) -> None:
         """
         Updates the posterior state (`gamma`) by resampling particles and merging new tracks.
         """

@@ -43,7 +43,10 @@ def process_trial_pytorch(mc, parameters, data, device):
         tracker1_torch.compute_gamma()
         tracker1_torch.prune()
         estimates_sensor1_torch[step] = deepcopy(tracker1_torch.estimate_state())
-        
+        if estimates_sensor1_torch[step] is not None and 'position' in estimates_sensor1_torch[step]:
+            print(f"Trial {mc+1}, Step {step+1} (PyTorch, Sensor 1) Estimated Position: {estimates_sensor1_torch[step]['position']}")
+        else:
+            print(f"Trial {mc+1}, Step {step+1} (PyTorch, Sensor 1) No position estimate available.")
         current_measurements_s2 = measurements[step][1]
         measurements_tensor_s2 = torch.tensor(current_measurements_s2, dtype=torch.float32, device=device)
         tracker2_torch.compute_alpha()
@@ -53,10 +56,13 @@ def process_trial_pytorch(mc, parameters, data, device):
         tracker2_torch.compute_gamma()
         tracker2_torch.prune()
         estimates_sensor2_torch[step] = deepcopy(tracker2_torch.estimate_state())
-        
+        if estimates_sensor2_torch[step] is not None and 'position' in estimates_sensor2_torch[step]:
+            print(f"Trial {mc+1}, Step {step+1} (PyTorch, Sensor 2) Estimated Position: {estimates_sensor2_torch[step]['position']}")
+        else:
+            print(f"Trial {mc+1}, Step {step+1} (PyTorch, Sensor 2) No position estimate available.")
         torch_time += time.time() - torch_start_time
 
-    logging.info(f"Trial {mc+1} (PyTorch): took {torch_time:.4f} seconds.")
+    print(f"Trial {mc+1} (PyTorch): took {torch_time:.4f} seconds.")
     
     trial_results = {
         'true_tracks': trajectories,
@@ -105,7 +111,10 @@ def run_numpy_mc_sequential(parameters, data, num_trials):
             tracker1_numpy.compute_gamma()
             tracker1_numpy.prune()
             estimates_sensor1_numpy[step] = deepcopy(tracker1_numpy.estimate_state())
-            
+            if estimates_sensor1_numpy[step] is not None and 'position' in estimates_sensor1_numpy[step]:
+                print(f"Trial {mc+1}, Step {step+1} (NumPy, Sensor 1) Estimated Position: {estimates_sensor1_numpy[step]['position']}")     
+            else:
+                print(f"Trial {mc+1}, Step {step+1} (NumPy, Sensor 1) No position estimate available.")            
             current_measurements_s2_numpy = measurements[step][1]
             tracker2_numpy.compute_alpha()
             tracker2_numpy.compute_xi_sigma(current_measurements_s2_numpy, 1)
@@ -114,6 +123,10 @@ def run_numpy_mc_sequential(parameters, data, num_trials):
             tracker2_numpy.compute_gamma()
             tracker2_numpy.prune()
             estimates_sensor2_numpy[step] = deepcopy(tracker2_numpy.estimate_state())
+            if estimates_sensor2_numpy[step] is not None and 'position' in estimates_sensor2_numpy[step]:
+               print(f"Trial {mc+1}, Step {step+1} (NumPy, Sensor 2) Estimated Position: {estimates_sensor2_numpy[step]['position']}")
+            else:
+               print(f"Trial {mc+1}, Step {step+1} (NumPy, Sensor 2) No position estimate available.")
 
             numpy_time += time.time() - numpy_start_time
 
