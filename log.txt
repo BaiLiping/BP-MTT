@@ -1,0 +1,49 @@
+2025-08-01 14:01:03,015 - --- Running PyTorch (Sequential) Benchmark ---
+2025-08-01 14:01:03,033 - MPS device found. Using Apple Silicon GPU.
+2025-08-01 14:01:24,212 - Trial 1 (PyTorch): took 21.1412 seconds.
+2025-08-01 14:01:24,223 - PyTorch trial 1 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0000_pytorch.pkl
+2025-08-01 14:01:37,688 - Trial 2 (PyTorch): took 13.4622 seconds.
+2025-08-01 14:01:37,695 - PyTorch trial 2 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0001_pytorch.pkl
+2025-08-01 14:01:48,302 - Trial 3 (PyTorch): took 10.6035 seconds.
+2025-08-01 14:01:48,311 - PyTorch trial 3 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0002_pytorch.pkl
+2025-08-01 14:01:58,184 - Trial 4 (PyTorch): took 9.8702 seconds.
+2025-08-01 14:01:58,189 - PyTorch trial 4 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0003_pytorch.pkl
+2025-08-01 14:02:08,664 - Trial 5 (PyTorch): took 10.4724 seconds.
+2025-08-01 14:02:08,676 - PyTorch trial 5 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0004_pytorch.pkl
+2025-08-01 14:02:16,687 - Trial 6 (PyTorch): took 8.0085 seconds.
+2025-08-01 14:02:16,696 - PyTorch trial 6 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0005_pytorch.pkl
+2025-08-01 14:02:24,692 - Trial 7 (PyTorch): took 7.9925 seconds.
+2025-08-01 14:02:24,697 - PyTorch trial 7 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0006_pytorch.pkl
+2025-08-01 14:02:34,213 - Trial 8 (PyTorch): took 9.5134 seconds.
+2025-08-01 14:02:34,222 - PyTorch trial 8 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0007_pytorch.pkl
+2025-08-01 14:02:44,526 - Trial 9 (PyTorch): took 10.3007 seconds.
+2025-08-01 14:02:44,536 - PyTorch trial 9 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0008_pytorch.pkl
+2025-08-01 14:02:52,890 - Trial 10 (PyTorch): took 8.3506 seconds.
+2025-08-01 14:02:52,899 - PyTorch trial 10 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0009_pytorch.pkl
+2025-08-01 14:02:52,899 - PyTorch-based sequential tracking experiment completed.
+2025-08-01 14:02:52,899 - 
+--- Running NumPy (Sequential) Benchmark ---
+2025-08-01 14:03:07,297 - Trial 1 (NumPy): took 14.3949 seconds.
+2025-08-01 14:03:08,348 - NumPy trial 1 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0000_numpy.pkl
+2025-08-01 14:03:22,823 - Trial 2 (NumPy): took 14.4730 seconds.
+2025-08-01 14:03:23,697 - NumPy trial 2 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0001_numpy.pkl
+2025-08-01 14:03:38,290 - Trial 3 (NumPy): took 14.5906 seconds.
+2025-08-01 14:03:39,137 - NumPy trial 3 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0002_numpy.pkl
+2025-08-01 14:03:54,015 - Trial 4 (NumPy): took 14.8751 seconds.
+2025-08-01 14:03:54,926 - NumPy trial 4 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0003_numpy.pkl
+2025-08-01 14:04:08,944 - Trial 5 (NumPy): took 14.0168 seconds.
+2025-08-01 14:04:09,726 - NumPy trial 5 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0004_numpy.pkl
+2025-08-01 14:04:23,549 - Trial 6 (NumPy): took 13.8213 seconds.
+2025-08-01 14:04:24,249 - NumPy trial 6 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0005_numpy.pkl
+2025-08-01 14:04:37,638 - Trial 7 (NumPy): took 13.3874 seconds.
+2025-08-01 14:04:38,313 - NumPy trial 7 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0006_numpy.pkl
+2025-08-01 14:04:51,587 - Trial 8 (NumPy): took 13.2721 seconds.
+2025-08-01 14:04:52,242 - NumPy trial 8 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0007_numpy.pkl
+2025-08-01 14:05:06,311 - Trial 9 (NumPy): took 14.0677 seconds.
+2025-08-01 14:05:07,093 - NumPy trial 9 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0008_numpy.pkl
+2025-08-01 14:05:21,484 - Trial 10 (NumPy): took 14.3877 seconds.
+2025-08-01 14:05:22,266 - NumPy trial 10 results saved to /Users/lipingb/Desktop/distributed_experiment_numpy/trial_0009_numpy.pkl
+2025-08-01 14:05:22,328 - 
+--- Benchmark Summary ---
+2025-08-01 14:05:22,328 - Average PyTorch time over 10 trials: 10.9715 seconds.
+2025-08-01 14:05:22,328 - Average NumPy time over 10 trials: 14.1287 seconds.
