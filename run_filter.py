@@ -25,10 +25,10 @@ def process_trial_pytorch(mc, parameters, data, device):
     estimates_sensor2_torch = [None] * n_steps
     parameters_sensor1_torch = copy.deepcopy(parameters)
     parameters_sensor2_torch = copy.deepcopy(parameters)
-    tracker1_torch = TrackerBP_PyTorch(parameters_sensor1_torch, device=device)
-    tracker2_torch = TrackerBP_PyTorch(parameters_sensor2_torch, device=device)
     sensor_pos_1_torch = torch.tensor(parameters['sensor_positions'][:, 0], dtype=torch.float32, device=device)
     sensor_pos_2_torch = torch.tensor(parameters['sensor_positions'][:, 1], dtype=torch.float32, device=device)
+    tracker1_torch = TrackerBP_PyTorch(parameters_sensor1_torch, sensor_pos_1_torch, device=device)
+    tracker2_torch = TrackerBP_PyTorch(parameters_sensor2_torch, sensor_pos_2_torch, device=device)
 
     torch_time = 0
     for step in range(n_steps):
@@ -37,8 +37,8 @@ def process_trial_pytorch(mc, parameters, data, device):
         current_measurements_s1 = measurements[step][0]
         measurements_tensor_s1 = torch.tensor(current_measurements_s1, dtype=torch.float32, device=device)
         tracker1_torch.compute_alpha()
-        tracker1_torch.compute_xi_sigma(measurements_tensor_s1, sensor_pos_1_torch)
-        tracker1_torch.compute_beta(measurements_tensor_s1, sensor_pos_1_torch)
+        tracker1_torch.compute_xi_sigma(measurements_tensor_s1)
+        tracker1_torch.compute_beta(measurements_tensor_s1)
         tracker1_torch.compute_kappa_iota()
         tracker1_torch.compute_gamma()
         tracker1_torch.prune()
@@ -50,8 +50,8 @@ def process_trial_pytorch(mc, parameters, data, device):
         current_measurements_s2 = measurements[step][1]
         measurements_tensor_s2 = torch.tensor(current_measurements_s2, dtype=torch.float32, device=device)
         tracker2_torch.compute_alpha()
-        tracker2_torch.compute_xi_sigma(measurements_tensor_s2, sensor_pos_2_torch)
-        tracker2_torch.compute_beta(measurements_tensor_s2, sensor_pos_2_torch)
+        tracker2_torch.compute_xi_sigma(measurements_tensor_s2)
+        tracker2_torch.compute_beta(measurements_tensor_s2)
         tracker2_torch.compute_kappa_iota()
         tracker2_torch.compute_gamma()
         tracker2_torch.prune()

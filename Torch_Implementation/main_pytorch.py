@@ -31,7 +31,7 @@ def main():
     # Model parameters
     num_steps = 200
     parameters = {
-        'surveillance_region': torch.tensor([[-3000, 3000], [-3000, 3000]], dtype=torch.float32),
+        'surveillance_region': torch.tensor([[-3000, -3000], [3000, 3000]], dtype=torch.float32),
         'prior_velocity_covariance': torch.diag(torch.tensor([10**2, 10**2], dtype=torch.float32)),
         'driving_noise_variance': 0.010,
         'length_steps': torch.ones(num_steps, dtype=torch.float32),

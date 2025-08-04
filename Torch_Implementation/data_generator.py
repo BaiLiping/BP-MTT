@@ -109,7 +109,7 @@ class Data_Generator:
             detected_measurements = track_measurements[:, detected_mask, sensor]
             
             # Generate clutter
-            num_clutter = torch.poisson(torch.tensor(mean_clutter, device=self.device)).int().item()
+            num_clutter = torch.poisson(torch.tensor(mean_clutter, dtype=torch.float32, device=self.device)).int().item()
             if num_clutter > 0:
                 clutter = torch.zeros(2, num_clutter, device=self.device)
                 clutter[0, :] = torch.rand(num_clutter, device=self.device) * measurement_range

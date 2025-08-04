@@ -27,7 +27,7 @@ def get_parameters(device='cpu'):
     num_steps = 100  # Reduced for faster comparison
     
     parameters = {
-        'surveillance_region': np.array([[-3000, 3000], [-3000, 3000]], dtype=np.float32),
+        'surveillance_region': np.array([[-3000, -3000], [3000, 3000]], dtype=np.float32),
         'prior_velocity_covariance': np.diag([10**2, 10**2]).astype(np.float32),
         'driving_noise_variance': 0.010,
         'length_steps': np.ones(num_steps, dtype=np.float32),

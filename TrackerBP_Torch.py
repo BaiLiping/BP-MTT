@@ -13,9 +13,10 @@ class TrackerBP_PyTorch:
     This version is a direct structural mapping of the original NumPy version,
     with vectorized operations for parallel execution.
     """
-    def __init__(self, parameters: Dict[str, Any], device: str = 'cpu'):
+    def __init__(self, parameters: Dict[str, Any], sensor_pos: torch.Tensor, device: str = 'cpu'):
         self.params = parameters
         self.device = device
+        self.sensor_pos = sensor_pos.to(device=self.device, dtype=torch.float32)
 
         # --- Model Parameters ---
         self.p_s = self.params['p_s']
@@ -99,7 +100,7 @@ class TrackerBP_PyTorch:
         self.alpha_labels = self.gamma_labels.clone()
         self.alpha_existence = self.gamma_existence * self.p_s
         
-    def compute_xi_sigma(self, measurements: torch.Tensor, sensor_pos: torch.Tensor) -> None:
+    def compute_xi_sigma(self, measurements: torch.Tensor) -> None:
         """
         Computes the initial belief (`varsigma`) and message (`xi`) for new potential tracks.
         The initial distribution of the new tracks is based on the measurements and the sensor position.
@@ -120,8 +121,8 @@ class TrackerBP_PyTorch:
         
         # Transpose to get shape [4, num_particles, num_meas]
         self.varsigma_states = torch.zeros(4, self.num_particles, num_meas, device=self.device)
-        self.varsigma_states[0, :, :] = sensor_pos[0] + (ranges * torch.cos(bearings_rad)).T
-        self.varsigma_states[1, :, :] = sensor_pos[1] + (ranges * torch.sin(bearings_rad)).T
+        self.varsigma_states[0, :, :] = self.sensor_pos[0] + (ranges * torch.cos(bearings_rad)).T
+        self.varsigma_states[1, :, :] = self.sensor_pos[1] + (ranges * torch.sin(bearings_rad)).T
         
         L_vel = torch.linalg.cholesky(self.prior_velocity_cov)
         velocities = (L_vel @ torch.randn(2, num_meas * self.num_particles, device=self.device))
@@ -135,7 +136,7 @@ class TrackerBP_PyTorch:
         self.varsigma_existence = torch.full((num_meas,), birth_clutter_ratio, device=self.device)
         self.xi = 1.0 + self.varsigma_existence
 
-    def compute_beta(self, measurements: torch.Tensor, sensor_pos: torch.Tensor) -> None:
+    def compute_beta(self, measurements: torch.Tensor) -> None:
         """
         Computes the measurement likelihood factors and initial messages (`beta`) for existing tracks.
         This version operates in log-space for numerical stability.
@@ -155,7 +156,7 @@ class TrackerBP_PyTorch:
         if num_meas > 0:
             # --- Vectorized Log-Likelihood Calculation ---
             pos_states = self.alpha_states[:2, :, :] # Shape: [2, P, T]
-            diff = pos_states - sensor_pos.view(2, 1, 1)
+            diff = pos_states - self.sensor_pos.view(2, 1, 1)
             
             pred_range = torch.norm(diff, p=2, dim=0) # Shape: [P, T]
             pred_bearing_deg = torch.rad2deg(torch.atan2(diff[1, :, :], diff[0, :, :])) # Shape: [P, T]
@@ -227,22 +228,24 @@ class TrackerBP_PyTorch:
         kappa = torch.ones(num_meas, num_targets, device=self.device)
         
         for _ in range(num_iter):
-        # Message from target 'i' to measurement 'j' (mu_ab)
-        # Denominator: Sum of all incoming messages to target 'i'
-        denom_sum = beta_normalized[0, :] + torch.sum(beta_normalized[1:, :] * kappa, dim=0)
-        mu_ab_denom = denom_sum.unsqueeze(0) - beta_normalized[1:, :] * kappa + 1e-9
-        mu_ab = beta_normalized[1:, :] / mu_ab_denom
+            # Message from target 'i' to measurement 'j' (mu_ab)
+            # Denominator: Sum of all incoming messages to target 'i'
+            denom_sum = beta_normalized[0, :] + torch.sum(beta_normalized[1:, :] * kappa, dim=0)
+            mu_ab_denom = denom_sum.unsqueeze(0) - beta_normalized[1:, :] * kappa + 1e-9
+            mu_ab = beta_normalized[1:, :] / mu_ab_denom
 
-        # Message from measurement 'j' to target 'i' (recomputing kappa)
-        denom_sum_j = self.xi + torch.sum(mu_ab, dim=1)
-        kappa_denom = denom_sum_j.unsqueeze(1) - mu_ab + 1e-9
-        kappa = 1.0 / kappa_denom
-    
-    self.kappa = kappa
-    
-    # Compute iota: posterior probability of a measurement being unassociated
-    final_sum_j = torch.sum(mu_ab, dim=1)
-    self.iota = 1.0 / (self.xi + final_sum_j)    def compute_gamma(self) -> None:
+            # Message from measurement 'j' to target 'i' (recomputing kappa)
+            denom_sum_j = self.xi + torch.sum(mu_ab, dim=1)
+            kappa_denom = denom_sum_j.unsqueeze(1) - mu_ab + 1e-9
+            kappa = 1.0 / kappa_denom
+        
+        self.kappa = kappa
+        
+        # Compute iota: posterior probability of a measurement being unassociated
+        final_sum_j = torch.sum(mu_ab, dim=1)
+        self.iota = 1.0 / (self.xi + final_sum_j + 1e-9)
+
+    def compute_gamma(self) -> None:
         """
         Updates the posterior state (`gamma`) by resampling particles and merging new tracks.
         """
@@ -251,15 +254,14 @@ class TrackerBP_PyTorch:
         # --- Update existing tracks ---
         if num_targets > 0:
             # Calculate posterior particle log-weights
-            log_weights_det = torch.log(self.kappa + 1e-9).T.unsqueeze(-1) + self.log_likelihood_table[1:, :, :].permute(1, 0, 2)
-            log_weights_det = torch.logsumexp(log_weights_det, dim=1) # [T, P]
+            log_weights_unnorm = self.log_likelihood_table[1:, :, :].permute(1, 0, 2) + torch.log(self.kappa + 1e-9).T.unsqueeze(-1)
             
             # Combine with miss-detection log-likelihood
-            log_weights = torch.logaddexp(self.log_likelihood_table[0, :, :], log_weights_det) # [T, P]
-
+            log_weights_unnorm = torch.cat([self.log_likelihood_table[0, :, :].unsqueeze(1), log_weights_unnorm], dim=1)
+            
             # Update existence probability using log-sum-exp for stability
-            sum_log_weights = torch.logsumexp(log_weights, dim=1) - torch.log(torch.tensor(self.num_particles, device=self.device))
-            sum_weights = torch.exp(sum_log_weights)
+            log_sum_weights = torch.logsumexp(log_weights_unnorm, dim=(1, 2)) - torch.log(torch.tensor(self.num_particles, device=self.device))
+            sum_weights = torch.exp(log_sum_weights)
             
             is_alive = self.alpha_existence * sum_weights
             is_dead = 1 - self.alpha_existence
@@ -267,14 +269,37 @@ class TrackerBP_PyTorch:
             self.gamma_labels = self.alpha_labels.clone()
             
             # Resample particles from posterior distribution
+            # The posterior over association variables is used to select a single association hypothesis for each track
+            # Then particles are resampled from the likelihood of that hypothesis
+            
+            # Posterior over associations
+            post_assoc = torch.exp(log_weights_unnorm - torch.max(log_weights_unnorm, dim=1, keepdim=True)[0])
+            post_assoc_sum = torch.sum(post_assoc, dim=1, keepdim=True)
+            post_assoc_norm = post_assoc / (post_assoc_sum + 1e-9)
+            
+            # Sample one association hypothesis for each target
+            # Reshape for multinomial sampling: [T, M+1, P] -> [T, (M+1)*P]
+            post_assoc_reshaped = post_assoc_norm.view(num_targets, -1)
+            assoc_indices = torch.multinomial(post_assoc_reshaped, 1).squeeze(1)
+            
+            # Unravel indices to get association and particle index
+            assoc_hyp = assoc_indices // self.num_particles
+            particle_idx = assoc_indices % self.num_particles
+
+            # Get the weights for the chosen association
+            log_weights = torch.gather(log_weights_unnorm, 1, assoc_hyp.view(-1, 1, 1).expand(-1, -1, self.num_particles)).squeeze(1)
+
             # Convert log-weights to weights by subtracting the max for stability
             weights = torch.exp(log_weights - torch.max(log_weights, dim=1, keepdim=True)[0])
             norm_weights = weights / (torch.sum(weights, dim=1, keepdim=True) + 1e-12)
             indices = torch.multinomial(norm_weights, self.num_particles, replacement=True) # [T, P]
             
             # Gather resampled particles.
+            # Create indices for gathering: [T, P] -> [1, P, T]
             indices_reshaped = indices.T.unsqueeze(0)
-            self.gamma_states = torch.gather(self.alpha_states, 2, indices_reshaped.expand(4, -1, -1))
+            # Expand to match state dimensions: [4, P, T]
+            indices_expanded = indices_reshaped.expand(self.alpha_states.shape[0], -1, -1)
+            self.gamma_states = torch.gather(self.alpha_states, 2, indices_expanded)
         else: # No existing tracks, initialize gamma from empty
             self.gamma_states = torch.empty((4, self.num_particles, 0), device=self.device)
             self.gamma_existence = torch.empty((0,), device=self.device, dtype=torch.float32)

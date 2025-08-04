@@ -1,10 +1,2 @@
-2025-08-01 15:47:49,212 - --- Running PyTorch (Sequential) Benchmark ---
-2025-08-01 15:47:49,230 - MPS device found. Using Apple Silicon GPU.
-2025-08-01 15:48:10,617 - PyTorch trial 1 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0000_pytorch.pkl
-2025-08-01 15:48:24,869 - PyTorch trial 2 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0001_pytorch.pkl
-2025-08-01 15:48:35,705 - PyTorch trial 3 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0002_pytorch.pkl
-2025-08-01 15:48:46,170 - PyTorch trial 4 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0003_pytorch.pkl
-2025-08-01 15:48:56,687 - PyTorch trial 5 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0004_pytorch.pkl
-2025-08-01 15:49:04,965 - PyTorch trial 6 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0005_pytorch.pkl
-2025-08-01 15:49:13,595 - PyTorch trial 7 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0006_pytorch.pkl
-2025-08-01 15:49:23,318 - PyTorch trial 8 results saved to /Users/lipingb/Desktop/distributed_experiment_pytorch/trial_0007_pytorch.pkl
+2025-08-01 16:03:49,264 - --- Running PyTorch (Sequential) Benchmark ---
+2025-08-01 16:03:49,286 - MPS device found. Using Apple Silicon GPU.
