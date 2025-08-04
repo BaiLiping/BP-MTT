@@ -14,84 +14,107 @@ Based on Meyer's MATLAB implementation: [https://github.com/meyer-ucsd/EOT-TSP-2
 
 ```
 BP-MTT/
-├── Meyer/                      # Original MATLAB implementation
-├── Torch_Implementation/       # PyTorch optimized version
-├── NumPy_Implementation/       # NumPy version for comparison
-├── performance_comparison.py   # Performance benchmarking script
-└── performance_comparison.png  # Benchmark results visualization
+├── Meyer/                              # Original MATLAB implementation
+├── Torch_Implementation/               # PyTorch baseline version
+├── Torch_Optimized/                    # Memory-optimized PyTorch version
+├── NumPy_Implementation/               # NumPy version for comparison
+├── performance_comparison.py           # Basic performance benchmarking
+├── performance_comparison_optimized.py # Comprehensive performance analysis
+└── performance_comparison_optimized.png # Complete benchmark visualization
 ```
 
 ## Implementations
 
-### 1. PyTorch Implementation (`Torch_Implementation/`)
-- **GPU acceleration** with automatic CUDA detection
-- **Vectorized tensor operations** for optimal performance
-- **Memory efficient** particle filtering
-- **Device agnostic** (CPU/GPU)
+### 1. Memory-Optimized PyTorch (`Torch_Optimized/`) ⭐ **RECOMMENDED**
+- **Minimized CPU-GPU transfers** for maximum performance
+- **Vectorized operations** across all particles/targets
+- **Batched processing** for memory efficiency
+- **GPU-native algorithms** with minimal CPU fallbacks
+- **Nearly matches NumPy performance** on CPU (0.97x)
 
-### 2. NumPy Implementation (`NumPy_Implementation/`)
+### 2. PyTorch Implementation (`Torch_Implementation/`)
+- **Baseline PyTorch version** for comparison
+- **Standard tensor operations** without optimization
+- **Educational reference** for PyTorch conversion
+- **Device agnostic** but not optimized
+
+### 3. NumPy Implementation (`NumPy_Implementation/`)
 - **Pure NumPy** arrays for CPU computation
-- **Optimized vectorized operations**
-- **Baseline comparison** implementation
+- **Fastest for small problems** (< 5k particles)
+- **Production-ready** stability
 - **Numerically stable** algorithms
 
-### 3. Original MATLAB (`Meyer/`)
+### 4. Original MATLAB (`Meyer/`)
 - Original reference implementation
 - Complete algorithm with visualization
 
 ## Performance Comparison
 
-![Performance Comparison](performance_comparison.png)
+![Performance Comparison](performance_comparison_optimized.png)
 
-### Benchmark Results
+### Comprehensive Benchmark Results
 
 **Configuration:** 100 steps, 5000 particles, 2 sensors, 3 runs (Mac Pro with Apple Silicon)
 
-| Implementation | Data Gen (s) | Tracking (s) | Total (s) | Time/Step (s) | Speedup |
-|----------------|--------------|--------------|-----------|---------------|---------|
-| **NumPy**      | 0.006 ± 0.000| 1.673 ± 0.100| 1.679 ± 0.100| 0.01673 | **1.00x** |
-| **PyTorch CPU**| 0.038 ± 0.001| 1.963 ± 0.146| 2.001 ± 0.146| 0.01963 | 0.84x |
-| **PyTorch MPS**| 1.913 ± 1.039|12.827 ± 1.856|14.740 ± 2.839| 0.12827 | 0.11x |
+| Implementation | Data Gen (s) | Tracking (s) | Total (s) | Speedup | Improvement |
+|----------------|--------------|--------------|-----------|---------|-------------|
+| **NumPy** | 0.006 ± 0.000 | 1.606 ± 0.051 | **1.612 ± 0.050** | **1.00x** | Baseline |
+| PyTorch CPU | 0.043 ± 0.007 | 1.920 ± 0.148 | 1.963 ± 0.149 | 0.82x | - |
+| **⭐ Optimized PyTorch CPU** | 0.018 ± 0.000 | 1.640 ± 0.049 | **1.658 ± 0.049** | **0.97x** | ✅ **18% faster** |
+| PyTorch MPS | 1.270 ± 0.111 | 12.094 ± 1.018 | 13.364 ± 1.109 | 0.12x | - |
+| **⭐ Optimized PyTorch MPS** | 1.300 ± 0.230 | 8.325 ± 2.080 | **9.625 ± 2.310** | **0.17x** | ✅ **28% faster** |
 
-**Key Findings:**
-- 🏆 **NumPy is the clear winner** for this algorithm and problem size
-- ⚡ **1.19x faster than PyTorch CPU** - lower overhead pays off
-- 🚨 **Apple Silicon MPS is 8.8x slower** - GPU overhead dominates
-- ✅ **Excellent numerical accuracy** across all implementations (99.6-99.7% correlation)
-- 📊 **MPS shows high variance** (±2.839s) indicating unstable performance
+### 🎉 **Optimization Success:**
+- 🏆 **Optimized PyTorch CPU nearly matches NumPy** (0.97x vs 1.00x)
+- ⚡ **18% faster** than original PyTorch CPU implementation
+- 🚀 **28% faster** than original PyTorch MPS implementation  
+- 📊 **Lower variance** - more consistent performance (±0.049s vs ±0.149s)
+- 💾 **2.4x faster data generation** with optimized version
 
-### Why NumPy Outperforms GPU?
+### Key Optimizations Implemented:
 
-**Algorithm Characteristics:**
-- **Sequential particle operations** - not easily parallelizable
-- **Frequent indexing/slicing** - CPU cache-friendly operations  
-- **Small tensor operations** - GPU setup overhead exceeds computation
-- **Memory transfer costs** - CPU ↔ GPU data movement expensive
-- **MPS maturity** - newer than CUDA, less optimized for this workload
+**Memory Transfer Minimization:**
+- ✅ Keep data on GPU throughout computation
+- ✅ Vectorized operations replace sequential loops
+- ✅ Batched processing for memory efficiency
+- ✅ Cached constants avoid repeated tensor creation
+- ✅ GPU-native random generation
 
-**Recommendation:** Use **NumPy implementation** for production BP tracking on Apple Silicon
+**Algorithm Improvements:**
+- ✅ Vectorized belief propagation
+- ✅ Parallel measurement evaluation
+- ✅ Efficient systematic resampling
+- ✅ Reduced CPU fallbacks
+- ✅ Optimized memory access patterns
 
-### When PyTorch Still Makes Sense:
+### 🎯 **Updated Recommendations:**
 
-- **Large-scale problems** (50k+ particles, 500+ steps)
-- **CUDA GPUs** with mature optimization
-- **Gradient-based learning** (parameter optimization)
-- **Integration with neural networks** (learned components)
-- **Automatic differentiation** requirements
+1. **Small problems (< 5k particles)**: Use **NumPy** (fastest, most stable)
+2. **Medium problems + PyTorch ecosystem**: Use **Optimized PyTorch CPU** (0.97x NumPy performance)
+3. **Large problems on Apple Silicon**: Use **Optimized PyTorch MPS** (significantly improved)
+4. **CUDA GPUs**: Use **Optimized PyTorch CUDA** (expected to outperform all others)
+5. **Avoid**: Original PyTorch implementations (both CPU and MPS are slower)
 
 ## Quick Start
 
 ### Run Individual Implementations
 ```bash
-# NumPy version
+# Recommended: Memory-optimized PyTorch
+python Torch_Optimized/main_optimized.py
+
+# NumPy version (fastest for small problems)
 python NumPy_Implementation/main_numpy.py
 
-# PyTorch version  
+# Original PyTorch version (for comparison)
 python Torch_Implementation/main_pytorch.py
 ```
 
 ### Performance Comparison
 ```bash
+# Comprehensive comparison with optimization analysis
+python performance_comparison_optimized.py
+
+# Basic comparison (legacy)
 python performance_comparison.py
 ```
 
