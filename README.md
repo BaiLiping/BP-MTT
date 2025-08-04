@@ -45,20 +45,39 @@ BP-MTT/
 
 ### Benchmark Results
 
-**Configuration:** 100 steps, 5000 particles, 2 sensors, 3 runs
+**Configuration:** 100 steps, 5000 particles, 2 sensors, 3 runs (Mac Pro with Apple Silicon)
 
-| Implementation | Data Gen (s) | Tracking (s) | Total (s) | Time/Step (s) |
-|----------------|--------------|--------------|-----------|---------------|
-| **NumPy**      | 0.006 ± 0.000| 1.628 ± 0.025| 1.634 ± 0.024| 0.01628 |
-| **PyTorch CPU**| 0.043 ± 0.008| 1.839 ± 0.142| 1.882 ± 0.142| 0.01839 |
+| Implementation | Data Gen (s) | Tracking (s) | Total (s) | Time/Step (s) | Speedup |
+|----------------|--------------|--------------|-----------|---------------|---------|
+| **NumPy**      | 0.006 ± 0.000| 1.673 ± 0.100| 1.679 ± 0.100| 0.01673 | **1.00x** |
+| **PyTorch CPU**| 0.038 ± 0.001| 1.963 ± 0.146| 2.001 ± 0.146| 0.01963 | 0.84x |
+| **PyTorch MPS**| 1.913 ± 1.039|12.827 ± 1.856|14.740 ± 2.839| 0.12827 | 0.11x |
 
 **Key Findings:**
-- ✅ **NumPy is 1.15x faster** than PyTorch CPU for this problem size
-- ✅ **99.6% correlation** between implementations (excellent accuracy)
-- ✅ **NumPy excels at data generation** (7x faster)
-- ✅ **Low variance** in timing measurements (consistent performance)
+- 🏆 **NumPy is the clear winner** for this algorithm and problem size
+- ⚡ **1.19x faster than PyTorch CPU** - lower overhead pays off
+- 🚨 **Apple Silicon MPS is 8.8x slower** - GPU overhead dominates
+- ✅ **Excellent numerical accuracy** across all implementations (99.6-99.7% correlation)
+- 📊 **MPS shows high variance** (±2.839s) indicating unstable performance
 
-*Note: PyTorch shows its advantages with larger problems and GPU acceleration*
+### Why NumPy Outperforms GPU?
+
+**Algorithm Characteristics:**
+- **Sequential particle operations** - not easily parallelizable
+- **Frequent indexing/slicing** - CPU cache-friendly operations  
+- **Small tensor operations** - GPU setup overhead exceeds computation
+- **Memory transfer costs** - CPU ↔ GPU data movement expensive
+- **MPS maturity** - newer than CUDA, less optimized for this workload
+
+**Recommendation:** Use **NumPy implementation** for production BP tracking on Apple Silicon
+
+### When PyTorch Still Makes Sense:
+
+- **Large-scale problems** (50k+ particles, 500+ steps)
+- **CUDA GPUs** with mature optimization
+- **Gradient-based learning** (parameter optimization)
+- **Integration with neural networks** (learned components)
+- **Automatic differentiation** requirements
 
 ## Quick Start
 

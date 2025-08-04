@@ -359,6 +359,8 @@ def main():
         
         if torch.cuda.is_available():
             torch_gpu_results = run_torch_implementation(parameters, num_steps, num_runs, device='cuda')
+        elif torch.backends.mps.is_available():
+            torch_gpu_results = run_torch_implementation(parameters, num_steps, num_runs, device='mps')
     
     # Print results
     print("\n=== PERFORMANCE RESULTS ===")
@@ -377,7 +379,8 @@ def main():
         print(f"  Speedup:         {numpy_results['stats']['total']['mean']/torch_cpu_results['stats']['total']['mean']:.2f}x")
     
     if torch_gpu_results:
-        print(f"\nPyTorch GPU Implementation:")
+        device_name = "GPU (CUDA)" if torch.cuda.is_available() else "GPU (MPS - Apple Silicon)"
+        print(f"\nPyTorch {device_name} Implementation:")
         print(f"  Data Generation: {torch_gpu_results['stats']['data_gen']['mean']:.3f} ± {torch_gpu_results['stats']['data_gen']['std']:.3f}s")
         print(f"  Tracking:        {torch_gpu_results['stats']['tracking']['mean']:.3f} ± {torch_gpu_results['stats']['tracking']['std']:.3f}s")
         print(f"  Total:           {torch_gpu_results['stats']['total']['mean']:.3f} ± {torch_gpu_results['stats']['total']['std']:.3f}s")
@@ -395,7 +398,8 @@ def main():
         print(f"  Correlation:      {accuracy_cpu['correlation']:.6f}")
     
     if accuracy_gpu:
-        print(f"\nAccuracy Comparison (NumPy vs PyTorch GPU):")
+        device_name = "GPU (CUDA)" if torch.cuda.is_available() else "GPU (MPS)"
+        print(f"\nAccuracy Comparison (NumPy vs PyTorch {device_name}):")
         print(f"  MSE:              {accuracy_gpu['mse']:.6f}")
         print(f"  MAE:              {accuracy_gpu['mae']:.6f}")
         print(f"  Correlation:      {accuracy_gpu['correlation']:.6f}")
